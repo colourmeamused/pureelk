@@ -14,8 +14,8 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 PUREELK_SCRIPT_URL=https://raw.githubusercontent.com/pureelk/pureelk/master/pureelk.sh
-PUREELK_SCRIPT_LOCALPATH=$PUREELK_PATH/pureelk.sh
-
+#PUREELK_SCRIPT_LOCALPATH=$PUREELK_PATH/pureelk.sh
+PUREELK_SCRIPT_LOCALPATH=/root/pureelk/pureelk.sh
 print_help() {
     echo "Usage: $0 {help|install|start|stop|attach|delete}"
 }
@@ -28,21 +28,10 @@ print_warn() {
     printf "${YELLOW}$1${NC}\n"
 }
 
-config_upstart() {
-    curl -o ${PUREELK_SCRIPT_LOCALPATH} ${PUREELK_SCRIPT_URL}
-    chmod u+x ${PUREELK_SCRIPT_LOCALPATH}
-
-cat > /etc/init/pureelk.conf << End-of-upstart
-start on runlevel [2345]
-stop on [!2345]
-task
-exec ${PUREELK_SCRIPT_LOCALPATH} start
-End-of-upstart
-}
 
 install() {
     if [ "$(uname)" == "Linux" ]; then 
-        if [ $(dpkg-query -W -f='${Status}' docker-engine 2>/dev/null | grep -c "ok installed") -eq 0 ];
+        if [ $(yum info installed docker) -eq 0 ];
         then
             print_warn "Docker not yet installed, installing..."
             curl -sSL https://get.docker.com/ | sh
@@ -58,7 +47,7 @@ install() {
     docker pull kibana
 
     print_info "Pulling pureelk image..."
-    docker pull pureelk/pureelk
+#    docker pull pureelk/pureelk
 
     print_info "Create local pureelk folders at $PUREELK_PATH"
 
@@ -74,11 +63,33 @@ install() {
         sudo mkdir -p $PUREELK_LOG
     fi
 
-    config_upstart
+    config_systemd
    
     print_info "Install completed."
 }
 
+config_systemd() {
+#    curl -o ${PUREELK_SCRIPT_LOCALPATH} ${PUREELK_SCRIPT_URL}
+#    chmod u+x ${PUREELK_SCRIPT_LOCALPATH}
+
+cat > /usr/lib/systemd/system/pureelk.service << End-of-systemd-unit
+[Unit]
+Description=PureELK Storage Monitoring with ELK
+After=network.target docker.service
+Requires=docker.service
+
+[Service]
+Type=forking
+TimeoutStartSec=300
+EnvironmentFile=-/etc/sysconfig/network
+ExecStart=${PUREELK_SCRIPT_LOCALPATH} start
+ExecStop=${PUREELK_SCRIPT_LOCALPATH} stop
+RemainAfterExit=yes
+[Install]
+WantedBy=multi-user.target
+End-of-systemd-unit
+systemctl enable /usr/lib/systemd/system/pureelk.service
+}
 start_containers() {
     print_info "Start PureElk elastic search container..."
     RUNNING="$(docker inspect -f '{{.State.Running}}' $PUREELK_ES)"
@@ -111,7 +122,7 @@ start_containers() {
     if [ $? -eq 1 ];
     then
         print_warn "$PUREELK does not exist yet, run a new one..."
-        docker run -d -p 8080:8080 --name=$PUREELK -v "$PUREELK_CONF":/pureelk/worker/conf -v "$PUREELK_LOG":/var/log/pureelk --link $PUREELK_ES:elasticsearch pureelk/pureelk
+        docker run -d -p 8088:8088 --name=$PUREELK -v "$PUREELK_CONF":/pureelk/worker/conf -v "$PUREELK_LOG":/var/log/pureelk --link $PUREELK_ES:elasticsearch pureelk/pureelk
     elif [ "$RUNNING" == "false" ];
     then
         docker start $PUREELK
@@ -119,7 +130,7 @@ start_containers() {
         print_warn "$PUREELK is already running."
     fi
 
-    print_info "PureELK management endpoint is at http://localhost:8080"
+    print_info "PureELK management endpoint is at http://localhost:8088"
     print_info "PureELK kibana endpoint is at http://localhost:5601"
 }
 

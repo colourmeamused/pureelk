@@ -1,10 +1,20 @@
-FROM ubuntu:14.04
+FROM registry.access.redhat.com/rhel
 MAINTAINER Gary Yang <garyyang@purestorage.com>; Cary Li <cary.li@purestorage.com>
 
 # Expose a web endpoint for the management website
 EXPOSE 8080
-
-RUN apt-get update && apt-get install -y rabbitmq-server python-pip python-dev vim nodejs-legacy npm curl
+RUN yum update -y
+RUN rpm --import https://packages.elastic.co/GPG-KEY-elasticsearch
+RUN echo $'\n\
+[elasticsearch-2.x] \n\
+name=Elasticsearch repository for 2.x packages \n\
+baseurl=https://packages.elastic.co/elasticsearch/2.x/centos \n\
+gpgcheck=1 \n\
+gpgkey=https://packages.elastic.co/GPG-KEY-elasticsearch \n\
+enabled=1 \n\
+' > /etc/yum.repos.d/elasticsearch.repo
+RUN yum localinstall -y http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
+RUN yum install -y rabbitmq-server python-pip python-dev vim nodejs-legacy npm curl elasticsearch python-devel python-requests
 RUN pip install Celery
 RUN pip install purestorage
 RUN pip install gevent
