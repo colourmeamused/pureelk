@@ -17,3 +17,7 @@ Change the URL to point to the forked repo, so the curl command becomes:
 
 `curl -s https://raw.githubusercontent.com/colourmeamused/pureelk/master/pureelk.sh | bash -s install`
 
+After a successful install, you can manage the service with the usual systemd commands
+
+`systemctl start pureelk.service`
+`systemctl stop pureelk.service`
