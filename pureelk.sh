@@ -7,13 +7,13 @@ PUREELK_LOG=/var/log/pureelk
 
 PUREELK_ES=pureelk-elasticsearch
 PUREELK_KI=pureelk-kibana
-PUREELK=pureelk
+PUREELK=pureelk-rhel
 
 GREEN='\033[1;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-PUREELK_SCRIPT_URL=https://raw.githubusercontent.com/pureelk/pureelk/master/pureelk.sh
+PUREELK_SCRIPT_URL=https://raw.githubusercontent.com/colourmeamused/pureelk/master/pureelk.sh
 #PUREELK_SCRIPT_LOCALPATH=$PUREELK_PATH/pureelk.sh
 PUREELK_SCRIPT_LOCALPATH=/root/pureelk/pureelk.sh
 print_help() {
@@ -122,7 +122,7 @@ start_containers() {
     if [ $? -eq 1 ];
     then
         print_warn "$PUREELK does not exist yet, run a new one..."
-        docker run -d -p 8088:8088 --name=$PUREELK -v "$PUREELK_CONF":/pureelk/worker/conf -v "$PUREELK_LOG":/var/log/pureelk --link $PUREELK_ES:elasticsearch pureelk/pureelk
+        docker run -d -p 8080:8080 --name=$PUREELK -v "$PUREELK_CONF":/pureelk/worker/conf -v "$PUREELK_LOG":/var/log/pureelk --link $PUREELK_ES:elasticsearch pureelk-rhel
     elif [ "$RUNNING" == "false" ];
     then
         docker start $PUREELK
