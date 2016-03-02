@@ -122,7 +122,8 @@ start_containers() {
     if [ $? -eq 1 ];
     then
         print_warn "$PUREELK does not exist yet, run a new one..."
-        docker run -d -p 8080:8080 --name=$PUREELK -v "$PUREELK_CONF":/pureelk/worker/conf -v "$PUREELK_LOG":/var/log/pureelk --link $PUREELK_ES:elasticsearch pureelk-rhel
+        docker run -it -d -p 8080:8080   -v /sys/fs/cgroup:/sys/fs/cgroup:ro --name=$PUREELK -v "$PUREELK_CONF":/pureelk/worker/conf -v "$PUREELK_LOG":/var/log/pureelk --link $PUREELK_ES:elasticsearch --privileged pureelk-rhel
+
     elif [ "$RUNNING" == "false" ];
     then
         docker start $PUREELK
@@ -130,7 +131,7 @@ start_containers() {
         print_warn "$PUREELK is already running."
     fi
 
-    print_info "PureELK management endpoint is at http://localhost:8088"
+    print_info "PureELK management endpoint is at http://localhost:8080"
     print_info "PureELK kibana endpoint is at http://localhost:5601"
 }
 
