@@ -3,7 +3,7 @@
 # This is the startup script for the container. See Dockerfile instructions.
 
 # Start the rabbitmq which is used by the Celery worker
- /usr/lib/rabbitmq/bin/rabbitmq-server
+/usr/lib/rabbitmq/bin/rabbitmq-server &
 # We are running Celery worker as root in the container. We must set this env variable for
 # Celery to start
 export C_FORCE_ROOT=1

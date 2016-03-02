@@ -88,6 +88,7 @@ RemainAfterExit=yes
 [Install]
 WantedBy=multi-user.target
 End-of-systemd-unit
+systemctl daemon-reload
 systemctl enable /usr/lib/systemd/system/pureelk.service
 }
 start_containers() {
@@ -96,7 +97,7 @@ start_containers() {
     if [ $? -eq 1 ];
     then
         print_warn "$PUREELK_ES does not exist yet, run a new one..."
-        docker run -d -P --name=$PUREELK_ES -v "$PUREELK_ESDATA":/usr/share/elasticsearch/data elasticsearch:2 -Des.network.host=0.0.0.0
+        docker run -d -p 9200:9200 -P --name=$PUREELK_ES -v "$PUREELK_ESDATA":/usr/share/elasticsearch/data elasticsearch:2 -Des.network.host=0.0.0.0
     elif [ "$RUNNING" == "false" ];
     then
         docker start $PUREELK_ES
