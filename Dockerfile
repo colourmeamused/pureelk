@@ -20,6 +20,7 @@ gpgkey=https://packages.elastic.co/GPG-KEY-elasticsearch \n\
 enabled=0 \n\
 ' > /etc/yum.repos.d/elasticsearch.repo
 # RUN yum localinstall -y http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
+RUN yum-config-manager --enable rhel-server-rhscl-7-rpms
 RUN yum install -y rabbitmq-server vim nodejs  nodejs010-npm curl elasticsearch gcc 
 RUN pip install Celery==3.1.18
 RUN pip install purestorage==1.4.0
@@ -28,7 +29,7 @@ RUN pip install Flask==0.10.1
 RUN pip install elasticsearch==1.6.0
 RUN pip install python-dateutil==2.4.2
 RUN pip install enum34==1.0.4
-RUN npm install elasticdump@0.15.0
+RUN scl enable nodejs010 'npm install elasticdump@0.15.0'
 ENV target_folder /pureelk
 ADD container/ $target_folder
 ADD conf/logrotate-pureelk.conf /etc/logrotate.d/pureelk
